@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="new_invoice_view" model="ir.ui.view">
+            <field name="name">account.new_invoice_view.inherited</field>
+      <!--      <field name="model">report_invoice_document</field>-->
+            <field name="inherit_id" ref="account.report_invoice_document"/>
+            <field name="arch" type="xml">
+	<data inherit_id="account.report_invoice_document">
+            <xpath expr="//div[@name='invoice_address']" position="before">
+		<div name="invoice_our" style="position: absolute;" class="col-xs-5 col-xs-offset-7">
+	        <span t-if="o.user_id.name == 'Administrator'">
+		    <span style="font-weight: bold;">Lugar de Expedicion: </span>
+		    <span>Administrador</span><br></br>
+		</span>
+   		<span t-if="o.user_id.name != 'Administrator'">
+                    <span style="font-weight: bold;">Lugar de Expedicion: </span>
+                    <span t-field="o.team_id.name"/><br></br>
+                </span>
+		<div>
+		<span t-if="o.partner_id.vat" class="mt16"><span style="font-weight: bold;"><t t-esc="o.company_id.country_id.vat_label or 'RFC'"/>: </span> <span t-field="o.partner_id.vat"/></span>
+                <span style="font-weight: bold;">UsoCFDI: </span><span t-field="o.x_UseCode"/><br></br>
+                <span style="font-weight: bold;">Descripcion de Uso: </span><span t-field="o.l10n_mx_edi_usage"/>
+		</div>
+		</div>
+	    </xpath>
+	   
+	    <xpath expr="//div[@name='invoice_address']" position="replace">
+ 		<span style="font-weight: bold;">Cliente:</span><br></br>
+		<span t-field="o.partner_id"/><br></br>
+		<span t-field="o.partner_id.street_name"/> <span t-field="o.partner_id.street_number"/><span t-if="o.partner_id.street_number!=''">-<span t-field="o.partner_id.street_number2"/></span><br></br>
+<!--		<address t-field="o.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;], &quot;no_marker&quot;: True}"/>-->
+		<span t-field="o.partner_id.l10n_mx_edi_colony"/><br></br>
+		<span style="text-transform: uppercase;" t-field="o.partner_id.state_id"/> <span t-field="o.partner_id.zip"/><br></br>
+		<span style="text-transform: uppercase;" t-field="o.partner_id.country_id"/><br></br>
+
+		
+	    </xpath>
+		
+	    <xpath expr="//table[@name='invoice_line_table']" position="replace">
+		<table class="table table-condensed">
+		<thead>
+		    <tr style="font-size: 10px;">
+			<th>Clave</th>
+			<th>Cantidad</th>
+			<th>ClaveProd</th>
+			<th>Producto</th>
+			<th>Unidad</th>
+			<th>Impuestos</th>
+			<th class="hidden">Source Document</th>
+			<th>Precio Unitario</th>
+			<th t-if="display_discount">Disc.(%)</th>
+			<th>Importe</th>
+		    </tr>
+		</thead>
+		<tbody class="invoice_tbody">
+		    <tr t-foreach="o.invoice_line_ids" t-as="l" style="font-size: 8px;">
+			<td><span t-field="l.product_id.default_code"/></td>
+			<td class="text-right">
+			    <span t-field="l.quantity"/>
+			</td>
+			<td><span t-field="l.product_id.l10n_mx_edi_code_sat_id.code"/></td>
+                        <td><span t-field="l.product_id.name"/></td>
+			<td><span t-field="l.uom_id.l10n_mx_edi_code_sat_id"/></td>
+                        <td class="text-right">
+                            <span t-esc="', '.join(map(lambda x: (x.description or x.name), l.invoice_line_tax_ids))"/>
+                        </td>
+			<td class="hidden"><span t-field="l.origin"/></td>
+			<td class="text-right">
+                            <span t-field="l.price_unit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        </td>
+			<td t-if="display_discount" class="text-right">
+                            <span t-field="l.discount"/>
+                        </td>
+			<td class="text-right" id="subtotal">
+                            <span t-field="l.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
+                        </td>
+                    </tr>
+		    <tr t-foreach="range(max(5-len(o.invoice_line_ids),0))" t-as="l">
+                        <td>&amp;nbsp;</td>
+                        <td class="hidden"/>
+                        <td/>
+                        <td/>
+                        <td t-if="display_discount"/>
+                        <td/>
+                        <td/>
+                    </tr>
+                </tbody>
+		</table>
+	    </xpath>
+
+<!--	    <xpath expr="div[@name='reference']" position="before">
+		<div class="col-xs-2" t-if="o.x_TipoPago">
+		    <strong>Tipo de Pago:</strong>
+		    <p t-field="o.x_TipoPago"/>
+		</div>
+	    </xpath>-->
+
+	    <xpath expr="//p[@t-if='o.comment']" position="after">
+		<p t-if="o.currency_id">
+                   <span style="font-weight: bold;">Tipo de Moneda: </span> <span t-field="o.currency_id.display_name"/>
+                </p>	
+	    </xpath>
+
+	    <xpath expr="//h2[@name='title1_2']" position="replace">
+		<span style="font-weight: bold; font-size: 20px;">
+	            <span t-if="o.type == 'out_invoice' and (o.state == 'open' or o.state == 'paid')">Factura</span>
+                    <span t-if="o.type == 'out_invoice' and o.state == 'draft'">Factura Borrador</span>
+                    <span t-if="o.type == 'out_invoice' and o.state == 'cancel'">Factura Cancelada</span>
+                    <span t-if="o.type == 'out_refund'">Nota de Credito</span>
+                    <span t-if="o.type == 'in_refund'">Nota de Credito del Vendedor</span>
+                    <span t-if="o.type == 'in_invoice'">Vendor Bill</span>
+                    <span t-field="o.number"/>
+		</span>
+
+
+
+
+	    </xpath>
+	    </data>
+	    </field>
+	</record>
+    </data>
+</odoo>

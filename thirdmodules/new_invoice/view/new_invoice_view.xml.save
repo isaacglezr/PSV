@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="new_invoice_view" model="ir.ui.view">
+            <field name="name">account.new_invoice_view.inherited</field>
+      <!--      <field name="model">report_invoice_document</field>-->
+            <field name="inherit_id" ref="account.report_invoice_document"/>
+            <field name="arch" type="xml">
+	<data inherit_id="account.report_invoice_document">
+            <xpath expr="//div[@name='invoice_address']" position="before">
+		<div name="invoice_our" style="position: absolute;" class="col-xs-5 col-xs-offset-7">
+  	        <span t-if="o.user_id.name == 'UNIMEGAS CHIHUAHUA'">
+		    <span style="font-weight: bold;">Lugar de Expedicion: </span><span>Sucursal Chihuahua</span><br></br>
+		    <span>OJINAGA #201</span><br></br>
+		    <span>COLONIA CENTRO</span><br></br>
+		    <span>31000 CHIHUAHUA</span><br></br>
+		    <span>MEXICO</span>
+		</span>	
+
+		<span t-if="o.user_id.name == 'UNIMEGAS JUAREZ'">
+                    <span style="font-weight: bold;">Lugar de Expedicion: </span><span>Matriz Juarez</span><br></br> 
+                    <span>BENJAMIN FRANKLIN 2 Y 3 E INT. PLAZA DE LAS AMERICAS</span><br></br>
+                    <span>#3220 ZONA PRONAF</span><br></br>
+                    <span>32315 CIUDAD JUÁREZ, CHIHUAHUA</span><br></br>
+                    <span>MEXICO</span>
+                </span>
+                
+	        <span t-if="o.user_id.name == 'Administrator'">
+		    <span style="font-weight: bold;">Lugar de Expedicion: </span>
+		    <span>Administrador</span><br></br>
+		</span>
+		</div>
+	    </xpath>
+	   
+	    <xpath expr="//div[@name='invoice_address']" position="replace">
+ 		<span style="font-weight: bold;">Cliente:</span><br></br>
+		<address t-field="o.partner_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;], &quot;no_marker&quot;: True}"/>
+		<span t-if="o.partner_id.vat" class="mt16"><span style="font-weight: bold;"><t t-esc="o.company_id.country_id.vat_label or 'RFC'"/>: </span> <span t-field="o.partner_id.vat"/></span><br></br>
+		<span style="font-weight: bold;">UsoCFDI: </span><span t-field="o.x_UseCode"/><br></br>
+		<span style="font-weight: bold;">Descripcion de Uso: </span><span t-field="o.l10n_mx_edi_usage"/>
+	    </xpath>
+		
+	    <xpath expr="//table[@name='invoice_line_table']" position="replace">
+		<table class="table table-condensed">
+		<thead>
+		    <tr style="font-size: 10px;">
+			<th>Clave</th>
+			<th>Cantidad</th>
+			<th>ClaveProd</th>
+			<th>Producto</th>
+			<th>Unidad</th>
+			<th>Impuestos</th>
+			<th class="hidden">Source Document</th>
+			<th>Precio Unitario</th>
+			<th t-if="display_discount">Disc.(%)</th>
+			<th>Importe</th>
+		    </tr>
+		</thead>
+		<tbody class="invoice_tbody">
+		    <tr t-foreach="o.invoice_line_ids" t-as="l" style="font-size: 8px;">
+			<td><span t-field="l.product_id.default_code"/></td>
+			<td class="text-right">
+			    <span t-field="l.quantity"/>
+			</td>
+			<td><span t-field="l.product_id.l10n_mx_edi_code_sat_id.code"/></td>
+                        <td><span t-field="l.product_id.name"/></td>
+			<td><span t-field="l.uom_id.l10n_mx_edi_code_sat_id"/></td>
+                        <td class="text-right">

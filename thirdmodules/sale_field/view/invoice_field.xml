@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Add instructor field to existing view -->
+        <record model="ir.ui.view" id="invoice_field_view">
+            <field name="name">account.invoice_invoice_field_view.inherited</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+		<xpath expr="//field[@name='team_id']" position="after">
+                        <field name="x_OrdenCompra"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
